@@ -20,7 +20,7 @@ Stack: Next.js 16, React 19, TypeScript, Tailwind CSS 4, Supabase (auth, Postgre
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | Supabase anon key (protected by RLS) |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | Admin payment approval and public share links. Never expose. |
 | `GEMINI_API_KEY` | server | AI planning and narration |
-| `GEMINI_MODEL` | server | Defaults to `gemini-3.8-flash` |
+| `GEMINI_MODEL` | server | Primary model; falls back across other Gemini models if overloaded |
 | `NEXT_PUBLIC_SITE_URL` | public | Optional. Overrides the origin used in auth emails |
 | `NEXT_PUBLIC_PAY_LINK_*` | public | Checkout links per plan (defaults in `src/content/site.ts`) |
 | `ADMIN_EMAILS` | server | Comma-separated emails that can approve payments at `/app/admin` |

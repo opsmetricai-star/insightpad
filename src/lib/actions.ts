@@ -80,13 +80,19 @@ export async function askThread(threadId: string, question: string): Promise<Act
     const { data: th } = await c.supabase.from("threads").select("id, dataset_id, title").eq("id", threadId).eq("workspace_id", c.workspace.id).single();
     if (!th?.dataset_id) return { error: "This thread has no dataset." };
     const { data: hist } = await c.supabase.from("thread_messages").select("role, content").eq("thread_id", threadId).order("created_at", { ascending: false }).limit(6);
-    const ans = await answerQuestion(c.supabase, c.workspace.id, th.dataset_id, q, (hist ?? []).reverse());
+    const ans = await answerQuestion(c.supabase, c.workspace.id, th.dataset_id, q, (hist ?? []).reverse(), { deferSpend: true });
     const rows = [
-      { thread_id: threadId, workspace_id: c.workspace.id, role: "user", content: q },
-      { thread_id: threadId, workspace_id: c.workspace.id, role: "assistant", content: ans.text, plan: ans.plan, result: ans.result, credits: COST.question },
+      { thread_id: threadId, workspace_id: c.workspace.id, role: "user", content: q, plan: null, result: null, credits: 0 },
+      { thread_id: threadId, workspace_id: c.workspace.id, role: "assistant", content: ans.text || ans.plan.title, plan: ans.plan, result: ans.result, credits: COST.question },
     ];
     const { data: saved, error } = await c.supabase.from("thread_messages").insert(rows).select("id, role, content, plan, result, credits, flagged");
-    if (error) return { error: error.message };
+    if (error) return { error: "We could not save this answer. You were not charged. Please try again." };
+    try {
+      await ans.commit();
+    } catch (e) {
+      await c.supabase.from("thread_messages").delete().in("id", (saved ?? []).map((m) => m.id));
+      return { error: msg(e) };
+    }
     if (th.title === "New thread") await c.supabase.from("threads").update({ title: q.slice(0, 80) }).eq("id", threadId);
     revalidatePath("/app/threads");
     return { messages: (saved ?? []) as ChatMsg[] };
@@ -182,9 +188,14 @@ export async function addWidget(appId: string, question: string): Promise<Action
     if (c.role === "viewer") return { error: "Viewers cannot edit apps." };
     const { data: app } = await c.supabase.from("apps").select("id, dataset_id, widgets").eq("id", appId).eq("workspace_id", c.workspace.id).single();
     if (!app?.dataset_id) return { error: "App not found." };
-    const a = await answerQuestion(c.supabase, c.workspace.id, app.dataset_id, question, [], { narrateText: false });
+    const a = await answerQuestion(c.supabase, c.workspace.id, app.dataset_id, question, [], { narrateText: false, deferSpend: true });
     const widgets = [...(app.widgets as Widget[]), { id: crypto.randomUUID(), title: a.plan.title, plan: a.plan }];
-    await c.supabase.from("apps").update({ widgets }).eq("id", appId);
+    const upd = await c.supabase.from("apps").update({ widgets }).eq("id", appId);
+    if (upd.error) return { error: "We could not save the widget. You were not charged. Please try again." };
+    try { await a.commit(); } catch (e) {
+      await c.supabase.from("apps").update({ widgets: app.widgets }).eq("id", appId);
+      return { error: msg(e) };
+    }
     revalidatePath(`/app/apps/${appId}`);
     return {};
   } catch (e) { return { error: msg(e) }; }

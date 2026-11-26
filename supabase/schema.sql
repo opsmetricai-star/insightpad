@@ -57,7 +57,7 @@ create table if not exists public.datasets (
   row_count integer not null default 0,
   truncated boolean not null default false,
   rows jsonb not null default '[]',
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -66,7 +66,7 @@ create table if not exists public.threads (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   dataset_id uuid references public.datasets(id) on delete set null,
   title text not null default 'New thread',
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -89,7 +89,7 @@ create table if not exists public.notebooks (
   title text not null default 'Untitled notebook',
   dataset_id uuid references public.datasets(id) on delete set null,
   cells jsonb not null default '[]',
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   updated_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
@@ -110,7 +110,7 @@ create table if not exists public.apps (
   widgets jsonb not null default '[]',
   published boolean not null default false,
   share_token text unique default encode(gen_random_bytes(12), 'hex'),
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -122,7 +122,7 @@ create table if not exists public.context_items (
   definition text not null,
   dataset_id uuid references public.datasets(id) on delete set null,
   endorsed boolean not null default true,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -131,7 +131,7 @@ create table if not exists public.eval_suites (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   name text not null,
   dataset_id uuid references public.datasets(id) on delete cascade,
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 create table if not exists public.eval_cases (
@@ -151,7 +151,7 @@ create table if not exists public.eval_runs (
   failed integer not null default 0,
   credits integer not null default 0,
   results jsonb not null default '[]',
-  created_by uuid references auth.users(id),
+  created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -159,7 +159,7 @@ create table if not exists public.eval_runs (
 create table if not exists public.usage_events (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
-  user_id uuid references auth.users(id),
+  user_id uuid references auth.users(id) on delete set null,
   kind text not null,
   credits integer not null default 0,
   meta jsonb not null default '{}',

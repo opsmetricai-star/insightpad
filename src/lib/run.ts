@@ -26,17 +26,18 @@ export async function spend(supabase: SupabaseClient, ws: string, amount: number
   if (error || !data) throw new Error("You are out of AI credits. Upgrade your plan on the Billing page.");
 }
 
-export type Answer = { plan: Plan; result: Result; text: string };
+export type Answer = { plan: Plan; result: Result; text: string; /** Charges the credit. Only present when deferSpend is set; call it after the result is saved. */ commit: () => Promise<void> };
 
-export async function answerQuestion(supabase: SupabaseClient, ws: string, datasetId: string, question: string, history: { role: string; content: string }[] = [], opts: { narrateText?: boolean } = {}): Promise<Answer> {
+export async function answerQuestion(supabase: SupabaseClient, ws: string, datasetId: string, question: string, history: { role: string; content: string }[] = [], opts: { narrateText?: boolean; deferSpend?: boolean } = {}): Promise<Answer> {
   await assertCredits(supabase, ws, COST.question);
   const ds = await loadDataset(supabase, ws, datasetId);
   const ctx = await loadContext(supabase, ws, datasetId);
   const plan = await planQuestion({ question, columns: ds.columns, ctx, history });
   const result = runPlan(plan, ds.rows, ds.columns);
   const text = opts.narrateText === false ? "" : (await narrate({ question, plan, result })) || plan.explanation || "";
-  await spend(supabase, ws, COST.question, "question", { dataset: datasetId });
-  return { plan, result, text };
+  const commit = () => spend(supabase, ws, COST.question, "question", { dataset: datasetId });
+  if (!opts.deferSpend) await commit();
+  return { plan, result, text, commit };
 }
 
 export async function runAgent(supabase: SupabaseClient, ws: string, datasetId: string, instruction: string) {

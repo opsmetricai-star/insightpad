@@ -3,7 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { planSchema, schemaForPrompt, validatePlan, type Column, type Plan } from "./engine";
 
 export const aiConfigured = () => !!process.env.GEMINI_API_KEY;
-const MODEL = () => process.env.GEMINI_MODEL || "gemini-3.8-flash";
+// Primary model (GEMINI_MODEL) first, then fallbacks.
+const models = () => [...new Set([process.env.GEMINI_MODEL, "gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-3.8-flash"].filter((m): m is string => !!m))];
 
 const planResponseSchema = {
   type: Type.OBJECT,
@@ -30,19 +31,20 @@ const planResponseSchema = {
 };
 
 // Retries transient provider errors (overload, rate limit) and never leaks raw provider payloads to users.
-async function retry<T>(fn: () => Promise<T>, tries = 3): Promise<T> {
-  for (let i = 0; ; i++) {
+// On overload it falls through to the next model in the chain, so one busy model never blocks a user.
+async function retry<T>(fn: (model: string) => Promise<T>): Promise<T> {
+  const chain = models();
+  let transient = false;
+  for (let i = 0; i < chain.length; i++) {
     try {
-      return await fn();
+      return await fn(chain[i]);
     } catch (e) {
       const m = e instanceof Error ? e.message : "";
-      const transient = /\b(429|500|502|503|504)\b|UNAVAILABLE|RESOURCE_EXHAUSTED/.test(m);
-      if (!transient || i >= tries - 1) {
-        throw new Error(transient ? "The AI engine is busy right now. Please try again in a moment." : "The AI engine could not complete this request. Please try again.");
-      }
-      await new Promise((r) => setTimeout(r, 1200 * (i + 1)));
+      transient = /\b(429|500|502|503|504)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|NOT_FOUND/.test(m);
+      if (!transient) break;
     }
   }
+  throw new Error(transient ? "The AI engine is busy right now. Please try again in a moment." : "The AI engine could not complete this request. Please try again.");
 }
 
 export type ContextItem ={ kind: string; name: string; definition: string };
@@ -70,8 +72,8 @@ export async function planQuestion(opts: { question: string; columns: Column[]; 
   const hist = (opts.history ?? []).slice(-6).map((m) => `${m.role}: ${m.content}`).join("\n");
   let lastErr = "";
   for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await retry(() => ai.models.generateContent({
-      model: MODEL(),
+    const res = await retry((model) => ai.models.generateContent({
+      model,
       contents: `${hist ? "Conversation so far:\n" + hist + "\n\n" : ""}Question: ${opts.question}${lastErr ? `\n\nYour previous plan was invalid: ${lastErr}. Fix it.` : ""}`,
       config: { systemInstruction: systemPrompt(opts.columns, opts.ctx), responseMimeType: "application/json", responseSchema: planResponseSchema, temperature: 0 },
     }));
@@ -95,8 +97,8 @@ export async function narrate(opts: { question: string; plan: Plan; result: { co
   if (!key) return "";
   const ai = new GoogleGenAI({ apiKey: key });
   try {
-    const res = await retry(() => ai.models.generateContent({
-      model: MODEL(),
+    const res = await retry((model) => ai.models.generateContent({
+      model,
       contents: `Question: ${opts.question}\nComputed result (authoritative, do not alter any number):\n${JSON.stringify(opts.result.rows.slice(0, 20))} with columns ${opts.result.columns.join(", ")}\nWrite 1-3 plain sentences answering the question using ONLY these numbers.`,
       config: { temperature: 0.2 },
     }));
@@ -110,8 +112,8 @@ export async function agentCell(opts: { instruction: string; columns: Column[]; 
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("The AI engine is temporarily unavailable. Please try again shortly.");
   const ai = new GoogleGenAI({ apiKey: key });
-  const res = await retry(() => ai.models.generateContent({
-    model: MODEL(),
+  const res = await retry((model) => ai.models.generateContent({
+    model,
     contents: `Task: ${opts.instruction}\nPropose up to 3 query plans that together address the task and a short markdown summary of your approach.`,
     config: {
       systemInstruction: systemPrompt(opts.columns, opts.ctx),
