@@ -1,69 +1,183 @@
-import Image from "next/image";
+import Link from "next/link";
+import Shell from "@/components/Shell";
+import { Btn, Eyebrow, Faq, Icon, Section } from "@/components/ui";
+import { ApproachTabs, CapabilityStrip } from "@/components/HomeClient";
+import { ContextMock, DashboardMock, EvalsMock } from "@/components/Visuals";
+import { dataConnections, homeFaq } from "@/content/site";
+
+function Pill({ icon, label, tone }: { icon: string; label: string; tone: string }) {
+  return (
+    <span className="pill align-middle">
+      <span className="grid h-7 w-7 place-items-center rounded-full" style={{ background: tone + "22", color: tone }}><Icon name={icon} size={14} /></span>
+      <span className="font-body text-[clamp(16px,2vw,24px)]">{label}</span>
+    </span>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <Shell>
+      <section className="bg-dots relative overflow-hidden px-5 pb-24 pt-14 md:px-8 md:pt-20">
+        <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" />
+        <div className="relative mx-auto max-w-[1180px] text-center">
+          <h1 className="rise font-display text-[clamp(44px,8.2vw,108px)] font-bold leading-[0.95] tracking-[-0.03em] text-ink">
+            The AI analytics engine
+            <span className="rise rise-2 block pt-1 font-serif text-[1.02em] font-normal italic tracking-[-0.02em]">for decisive teams</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <div className="rise rise-3 mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-3 gap-y-3 text-[clamp(16px,2vw,24px)] text-ink-soft">
+            AI that <Pill icon="search" label="analyzes" tone="#3c9b7e" />
+            <Pill icon="book" label="explains" tone="#7a6bb5" />
+            and <Pill icon="spark" label="automates" tone="#4f6bd6" /> the work, so revenue, cost and risk questions are answered in minutes.
+          </div>
+          <div className="rise rise-3 mt-10 flex flex-wrap justify-center gap-5">
+            <Btn href="/signup">Sign up</Btn>
+            <Btn href="/login">Log in</Btn>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-line bg-paper px-5 py-7">
+        <CapabilityStrip />
+      </section>
+
+      <Section>
+        <div className="mx-auto mb-12 max-w-3xl text-center">
+          <h2 className="font-display text-[clamp(30px,4vw,48px)] font-semibold leading-tight tracking-tight">Replace the reporting queue with an engine that answers</h2>
+          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+            Dashboards and generic chatbots give inconsistent numbers and slow decisions. InsightPad pairs an AI planner with a deterministic calculation engine, so every team gets answers in seconds and every figure can be reproduced.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <ApproachTabs />
+      </Section>
+
+      <Section className="bg-paper-2">
+        <div className="mb-12 max-w-2xl">
+          <Eyebrow>HOW THE ENGINE WORKS</Eyebrow>
+          <h2 className="mt-4 font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight tracking-tight">The model plans. Code computes. You verify.</h2>
         </div>
-      </main>
-    </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            ["Plan", "The AI converts a business question into a typed query plan using your schema and endorsed definitions. Invalid plans are rejected and corrected."],
+            ["Compute", "A deterministic engine runs the plan on your stored rows. No figure is ever generated by a language model."],
+            ["Verify", "Each answer exposes its plan. Evals compare results with known values after every change to your context."],
+          ].map(([t, b], i) => (
+            <div key={t} className="card p-7">
+              <span className="tag-label text-violet">0{i + 1}</span>
+              <h3 className="mt-3 font-display text-2xl font-semibold">{t}</h3>
+              <p className="mt-3 leading-relaxed text-ink-soft">{b}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section>
+        <div className="grid items-center gap-12 md:grid-cols-[1fr_1.1fr]">
+          <div>
+            <h2 className="font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight tracking-tight">Ground every answer in your organization&apos;s definitions</h2>
+            <p className="mt-5 max-w-lg text-lg text-ink-soft">Context Studio holds the metrics and glossary your teams agree on. Endorsed definitions are applied to every AI request, which ends the argument over whose number is right.</p>
+            <Link href="/product/context-studio" className="mt-6 inline-flex items-center gap-2 font-medium underline underline-offset-4">Context Studio <Icon name="arrow" size={16} /></Link>
+          </div>
+          <ContextMock />
+        </div>
+      </Section>
+
+      <Section className="bg-paper-2">
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          <DashboardMock />
+          <div>
+            <h2 className="font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight tracking-tight">Turn every answer into a live app</h2>
+            <p className="mt-4 text-lg text-ink-soft">Pin questions as widgets, publish, and share a read-only link. Each widget recomputes from the data on every load, so the app is never stale.</p>
+            <Link href="/product/data-apps" className="mt-6 inline-flex items-center gap-2 font-medium underline underline-offset-4">Data apps <Icon name="arrow" size={16} /></Link>
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          <div>
+            <h2 className="font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight tracking-tight">Measure accuracy before your teams rely on it</h2>
+            <p className="mt-4 text-lg text-ink-soft">Write prompts with the number you expect. Run the suite after each change and see exactly which answers pass or fail, with credit cost per run.</p>
+            <Link href="/product/context-studio" className="mt-6 inline-flex items-center gap-2 font-medium underline underline-offset-4">Evals <Icon name="arrow" size={16} /></Link>
+          </div>
+          <EvalsMock />
+        </div>
+      </Section>
+
+      <Section dark className="bg-grid-night bg-noise">
+        <div className="grid items-start gap-12 md:grid-cols-2">
+          <div>
+            <Eyebrow dark>COST CONTROL</Eyebrow>
+            <h2 className="mt-4 font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight">Know what every AI workflow costs</h2>
+            <p className="mt-5 max-w-lg">Each AI action is metered in credits and logged with its type and time. Finance and data leaders see consumption by action, and limits stop runaway spend.</p>
+          </div>
+          <ul className="space-y-4">
+            {["One credit per question, two per agent cell, one per eval case", "Usage page with a per-action ledger", "Plan limits on datasets, rows and published apps"].map((t) => (
+              <li key={t} className="flex gap-3 border border-night-line bg-night-2/70 p-4"><span className="text-rose"><Icon name="check" /></span>{t}</li>
+            ))}
+          </ul>
+        </div>
+      </Section>
+
+      <Section dark className="border-t border-night-line">
+        <div className="grid items-center gap-12 md:grid-cols-2">
+          <div>
+            <Eyebrow dark>SECURITY AND CONTROL</Eyebrow>
+            <h2 className="mt-4 font-display text-[clamp(28px,3.6vw,44px)] font-semibold leading-tight">Enterprise-grade isolation by default</h2>
+            <p className="mt-5 max-w-lg">Row Level Security restricts every table to workspace members. Files sit in private storage. AI keys stay on the server. The model sees column names and a few sample values, never your full tables.</p>
+            <Link href="/trust" className="mt-6 inline-flex items-center gap-2 font-medium text-rose underline underline-offset-4">Trust center <Icon name="arrow" size={16} /></Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[["Row Level Security", "Enforced in the database."], ["Private storage", "Signed, short-lived access."], ["Workspace roles", "Owner, admin, editor, viewer."], ["Server-only keys", "Never sent to the browser."]].map(([t, b]) => (
+              <div key={t} className="border border-night-line bg-night-2/70 p-5"><p className="font-display text-lg text-white">{t}</p><p className="mt-1 text-sm">{b}</p></div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <p className="tag-label mb-3 text-ink-soft">USE CASES</p>
+        <h2 className="mb-10 font-display text-[clamp(28px,3.6vw,44px)] font-semibold tracking-tight">Where InsightPad pays back first</h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            ["Replace static dashboards with AI-driven self-serve", "Give teams governed access to answers while your data team keeps control of the definitions.", "/product/bi"],
+            ["Build a context layer for AI on your data", "Capture business logic once so every answer, notebook and app uses the same definitions.", "/product/context-studio"],
+            ["Put analyst-grade AI in every function", "Revenue, marketing, product and customer success teams ask their own questions and act on verified results.", "/solutions/data-leaders"],
+          ].map(([t, b, h]) => (
+            <Link key={t} href={h} className="card group flex flex-col p-7 transition-transform hover:-translate-y-1">
+              <h3 className="font-display text-xl font-semibold leading-snug">{t}</h3>
+              <p className="mt-3 flex-1 text-[15px] leading-relaxed text-ink-soft">{b}</p>
+              <span className="mt-6 inline-flex items-center gap-2 text-sm font-medium"><Icon name="arrow" size={16} /></span>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      <Section className="bg-paper-2">
+        <h2 className="font-display text-[clamp(28px,3.6vw,44px)] font-semibold tracking-tight">How your data enters and stays protected</h2>
+        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {dataConnections.map((g) => (
+            <div key={g.title} className="card p-6">
+              <h3 className="font-display text-lg font-semibold">{g.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{g.blurb}</p>
+              <div className="mt-4 flex flex-wrap gap-2">{g.items.map((i) => <span key={i} className="border border-line bg-paper px-2 py-1 font-mono text-[11px]">{i}</span>)}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <section className="bg-dots relative px-5 py-24 text-center md:px-8">
+        <h2 className="font-display text-[clamp(32px,5vw,60px)] font-bold tracking-tight">Put an AI analyst on your <span className="font-serif font-normal italic">data today.</span></h2>
+        <p className="mx-auto mt-4 max-w-lg text-lg text-ink-soft">Upload a dataset and get a verified answer in minutes.</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-5">
+          <Btn href="/signup">Sign up</Btn>
+          <Btn href="/login">Log in</Btn>
+        </div>
+      </section>
+
+      <Section>
+        <h2 className="mb-8 font-display text-[clamp(28px,3.6vw,44px)] font-semibold tracking-tight">FAQ</h2>
+        <Faq items={homeFaq} />
+      </Section>
+    </Shell>
   );
 }
